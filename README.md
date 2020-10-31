@@ -59,3 +59,21 @@ The resulting snapshots are:
 
 To build it, simply run make, and copy the zfssnap binary to the location of
 your choice.
+
+# zfsvault
+Cron job to back up ZFS snapshots to a "vault" drive for offline backups
+
+zfsvault is a small utility written in Go to sync automatic ZFS snapshots
+created using `zfssnap` between pools on a system that supports it, like
+Illumos (Solaris) or FreeBSD. I have only tested it on SmartOS, so your
+mileage may vary.
+
+It uses `zfs send` to send snapshots, incrementally if possible, between two
+zpools. It will ignore zfssnap hourly snapshots as the name is ambiguous. The
+filesystems received will have the property `canmount=off` set otherwise two
+datasets with the same mountpoint would cause a conflice in case of reboot. It
+will keep 14 days of daily snapshots and 24 hourly snapshots.
+
+My cron job for it is:
+
+    30 * * * * /usr/bin/env TZ=UTC /opt/root/bin/zfsvault zones vault

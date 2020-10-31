@@ -1,8 +1,11 @@
-ALL = zfssnap
+ALL = zfssnap zfsvault
 
 all: $(ALL)
 
 zfssnap: zfssnap.go
+	env GOPATH=`pwd` go build $^
+
+zfsvault: zfsvault.go
 	env GOPATH=`pwd` go build $^
 
 clean:
