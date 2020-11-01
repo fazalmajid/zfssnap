@@ -1,13 +1,14 @@
 package main
 
 import (
-	"log"
-	"os/exec"
 	"bufio"
-	"fmt"
 	"flag"
-	"time"
+	"fmt"
+	"log"
+	"os"
+	"os/exec"
 	"strings"
+	"time"
 )
 
 const date_fmt = "[02/Jan/2006:15:04:05 -0700]"
@@ -16,29 +17,33 @@ const RETENTION = 14 // retention period in days
 
 func create(snap string) {
 	zfs := exec.Command("/usr/sbin/zfs", "snapshot", "-r", snap)
+	zfs.Stdout = os.Stdout
+	zfs.Stderr = os.Stderr
 	if err := zfs.Run(); err != nil {
-		log.Fatal(err)
+		log.Fatal("error creating snapshot ", snap, ": ", err)
 	}
 }
 
 func destroy(snap string) {
 	zfs := exec.Command("/usr/sbin/zfs", "destroy", "-r", snap)
+	zfs.Stdout = os.Stdout
+	zfs.Stderr = os.Stderr
 	if err := zfs.Run(); err != nil {
-		log.Fatal(err)
+		log.Fatal("error destroying snapshot ", snap, ": ", err)
 	}
 }
 
 func main() {
 	flag.Parse()
-	
+
 	zfs := exec.Command("/usr/sbin/zfs", "list", "-H", "-t", "snapshot", "-o", "name")
 	stdout, err := zfs.StdoutPipe()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("error piping listing snapshots: ", err)
 	}
 	scanner := bufio.NewScanner(stdout)
 	if err := zfs.Start(); err != nil {
-		log.Fatal(err)
+		log.Fatal("error starting listing snapshots: ", err)
 	}
 	var snaps map[string]bool
 	snaps = make(map[string]bool)
@@ -50,7 +55,7 @@ func main() {
 		if i != -1 {
 			date, err := time.Parse("@daily-2006-01-02", snapshot[i:])
 			if err == nil {
-				if time.Since(date) > time.Duration(RETENTION * 24 * time.Hour) {
+				if time.Since(date) > time.Duration(RETENTION*24*time.Hour) {
 					//fmt.Println("destroying", snapshot)
 					destroy(snapshot)
 				}
@@ -58,7 +63,7 @@ func main() {
 		}
 	}
 	now := time.Now()
-	for _, fs := range(flag.Args()) {
+	for _, fs := range flag.Args() {
 		//fmt.Println(i, " ", fs)
 		hourly := fmt.Sprintf("%s@%s", fs, now.Format("hourly-15"))
 		if snaps[hourly] {
@@ -67,15 +72,15 @@ func main() {
 		}
 		//fmt.Println("creating", hourly)
 		create(hourly)
-		
+
 		daily := fmt.Sprintf("%s@%s", fs, now.Format("daily-2006-01-02"))
-		if ! snaps[daily] {
+		if !snaps[daily] {
 			//fmt.Println("creating", daily)
 			create(daily)
 		}
 	}
-	
+
 	if err := zfs.Wait(); err != nil {
-		log.Fatal(err)
+		log.Fatal("error waiting to exit: ", err)
 	}
 }
