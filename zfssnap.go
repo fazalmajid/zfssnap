@@ -33,10 +33,9 @@ func destroy(snap string) {
 	}
 }
 
-func main() {
-	flag.Parse()
-
-	zfs := exec.Command("/usr/sbin/zfs", "list", "-H", "-t", "snapshot", "-o", "name")
+func destroy_old_snaps(datasets []string, snaps map[string]bool) {
+	zfs := exec.Command(
+		"/usr/sbin/zfs", "list", "-H", "-t", "snapshot", "-o", "name")
 	stdout, err := zfs.StdoutPipe()
 	if err != nil {
 		log.Fatal("error piping listing snapshots: ", err)
@@ -45,10 +44,17 @@ func main() {
 	if err := zfs.Start(); err != nil {
 		log.Fatal("error starting listing snapshots: ", err)
 	}
-	var snaps map[string]bool
-	snaps = make(map[string]bool)
 	for scanner.Scan() {
 		snapshot := scanner.Text()
+		match := false
+		for _, fs := range datasets {
+			if strings.HasPrefix(snapshot, fs) {
+				match = true
+			}
+		}
+		if !match {
+			continue
+		}
 		snaps[snapshot] = true
 		//fmt.Println(snapshot)
 		i := strings.Index(snapshot, "@daily-")
@@ -62,8 +68,20 @@ func main() {
 			}
 		}
 	}
+	if err := zfs.Wait(); err != nil {
+		log.Fatal("error waiting to exit: ", err)
+	}
+}
+
+func main() {
+	flag.Parse()
+	datasets := flag.Args()
+	snaps := make(map[string]bool)
+
+	destroy_old_snaps(datasets, snaps)
+
 	now := time.Now()
-	for _, fs := range flag.Args() {
+	for _, fs := range datasets {
 		//fmt.Println(i, " ", fs)
 		hourly := fmt.Sprintf("%s@%s", fs, now.Format("hourly-15"))
 		if snaps[hourly] {
@@ -78,9 +96,5 @@ func main() {
 			//fmt.Println("creating", daily)
 			create(daily)
 		}
-	}
-
-	if err := zfs.Wait(); err != nil {
-		log.Fatal("error waiting to exit: ", err)
 	}
 }
