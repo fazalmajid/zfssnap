@@ -69,9 +69,11 @@ of WD My Book 14TB drives in rotation. My current backup set is about 5TB (and
 no longer fits on my previous My Passport 5TB USB drives) and it takes about
 12 hours to do the first transfer, which is why it makes sense to rotate
 drives more frequently than the 14 days it takes for the oldest snapshot that
-would be on it to be deleted on the source.
+would be on it to be deleted on the source by `zfssnap`, this way you only
+need to back up up to 14 day's worth of activity rather than since the
+beginning of time.
 
-zfsvault is a small utility written in Go to sync automatic ZFS snapshots
+`zfsvault` is a small utility written in Go to sync automatic ZFS snapshots
 created using `zfssnap` between pools on a system that supports it, like
 Illumos (Solaris) or FreeBSD. I have only tested it on SmartOS, so your
 mileage may vary.
@@ -79,7 +81,7 @@ mileage may vary.
 It uses `zfs send` to send snapshots, incrementally if possible, between two
 zpools. It will ignore zfssnap hourly snapshots as the name is ambiguous. The
 filesystems received will have the property `canmount=off` set otherwise two
-datasets with the same mountpoint would cause a conflice in case of reboot.
+datasets with the same mountpoint would cause a conflict in case of reboot.
 
 My cron job for it is:
 
