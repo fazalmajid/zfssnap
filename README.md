@@ -76,4 +76,5 @@ will keep 14 days of daily snapshots and 24 hourly snapshots.
 
 My cron job for it is:
 
-    30 * * * * /usr/bin/env TZ=UTC /opt/root/bin/zfsvault zones vault
+    30 0 * * * /usr/bin/env TZ=UTC PATH=/usr/local/bin:/usr/sbin:/usr/bin \
+    /root/bin/zfsvault -target vault -m zones > /var/log/zfsvault.log 2>&1
