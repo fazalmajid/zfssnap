@@ -2,8 +2,8 @@
 Cron job to manage ZFS snapshots
 
 zfssnap is a small utility written in Go to manage automatic ZFS snapshots on
-a system that supports it, like Illumos (Solaris) or FreeBSD. I have only
-tested it on SmartOS, so your mileage may vary.
+a system that supports it, like Illumos (Solaris), Linux or FreeBSD. I have
+only tested it on SmartOS and Linux, so your mileage may vary.
 
 It recursively creates snapshots on the ZFS filesystems supplied to it on the
 command-line. It will keep 14 days of daily snapshots and 24 hourly snapshots.
