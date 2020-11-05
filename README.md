@@ -61,7 +61,15 @@ To build it, simply run make, and copy the zfssnap binary to the location of
 your choice.
 
 # zfsvault
-Cron job to back up ZFS snapshots to a "vault" drive for offline backups
+This program is meant for offline backup to a "vault" drive.
+
+My own backup server is a SmartOS machine with 2x mirrored 14TB Seagate Exos
+Enterprise 14 drives. Clients back up to it using `rsync`. The vault is a pair
+of WD My Book 14TB drives in rotation. My current backup set is about 5TB (and
+no longer fits on my previous My Passport 5TB USB drives) and it takes about
+12 hours to do the first transfer, which is why it makes sense to rotate
+drives more frequently than the 14 days it takes for the oldest snapshot that
+would be on it to be deleted on the source.
 
 zfsvault is a small utility written in Go to sync automatic ZFS snapshots
 created using `zfssnap` between pools on a system that supports it, like
@@ -71,10 +79,13 @@ mileage may vary.
 It uses `zfs send` to send snapshots, incrementally if possible, between two
 zpools. It will ignore zfssnap hourly snapshots as the name is ambiguous. The
 filesystems received will have the property `canmount=off` set otherwise two
-datasets with the same mountpoint would cause a conflice in case of reboot. It
-will keep 14 days of daily snapshots and 24 hourly snapshots.
+datasets with the same mountpoint would cause a conflice in case of reboot.
 
 My cron job for it is:
 
     30 0 * * * /usr/bin/env TZ=UTC PATH=/usr/local/bin:/usr/sbin:/usr/bin \
     /root/bin/zfsvault -target vault -m zones > /var/log/zfsvault.log 2>&1
+
+I would also recommend using `zfs diff` to see what files changed between
+backups, as you may find you have redundant backups that could be rationalized
+to save on disk space.
