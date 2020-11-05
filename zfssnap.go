@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
 )
@@ -44,6 +45,7 @@ func destroy_old_snaps(datasets []string, snaps map[string]bool) {
 	if err := zfs.Start(); err != nil {
 		log.Fatal("error starting listing snapshots: ", err)
 	}
+	todo := make([]string, 0)
 	for scanner.Scan() {
 		snapshot := scanner.Text()
 		match := false
@@ -62,14 +64,19 @@ func destroy_old_snaps(datasets []string, snaps map[string]bool) {
 			date, err := time.Parse("@daily-2006-01-02", snapshot[i:])
 			if err == nil {
 				if time.Since(date) > time.Duration(RETENTION*24*time.Hour) {
-					//fmt.Println("destroying", snapshot)
-					destroy(snapshot)
+					todo = append(todo, snapshot)
 				}
 			}
 		}
 	}
 	if err := zfs.Wait(); err != nil {
 		log.Fatal("error waiting to exit: ", err)
+	}
+	sort.Strings(todo)
+	for i := range todo {
+		snapshot := todo[len(todo)-1-i]
+		//fmt.Println("destroying", snapshot)
+		destroy(snapshot)
 	}
 }
 
