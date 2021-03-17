@@ -1,7 +1,7 @@
 # zfssnap
 Cron job to manage ZFS snapshots
 
-> Note: do NOT use this on Ubuntu or any similar ZFS-on-Linux distributions that have the `zsysd` daemon for integration with `systemd` and other management tasks. It seems `zsysd` takes objection to some of the snapshots created by `zvault` and will crash, then be restarted by `systemd`, and so on *ad nauseam*, eating up half your CPU in the process.
+> Note: do NOT use this on Ubuntu or any similar ZFS-on-Linux distributions that have the `zsysd` daemon for integration with `systemd` and other management tasks. It seems `zsysd` takes objection to some of the snapshots created by `zvault` and will crash, then be restarted by `systemd`, and so on *ad nauseam*, eating up half your CPU in the process. Alpine Linux does not seem to have this problem.
 
 zfssnap is a small utility written in Go to manage automatic ZFS snapshots on
 a system that supports it, like Illumos (Solaris), Linux or FreeBSD. I have
