@@ -59,7 +59,7 @@ func zfs_send(dataset string, chain Chain, target string, nomount bool) {
 
 		var cmd, incr, mbuf, canmount string
 		if prev.Snapshot != "" {
-			incr = " -i " + prev.Snapshot
+			incr = " -i @" + prev.Snapshot
 		}
 		if *mbuffer {
 			mbuf = "mbuffer -q -s 128k -m 1G|"
