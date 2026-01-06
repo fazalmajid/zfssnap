@@ -13,13 +13,13 @@ import (
 )
 
 const (
-	date_fmt  = "[02/Jan/2006:15:04:05 -0700]"
-	iso_8601  = "2006-01-02 15:04:05"
-	RETENTION = 14 // retention period in days
+	date_fmt = "[02/Jan/2006:15:04:05 -0700]"
+	iso_8601 = "2006-01-02 15:04:05"
 )
 
 var (
-	verbose *bool
+	verbose   *bool
+	retention *time.Duration
 )
 
 func create(snap string) {
@@ -91,7 +91,7 @@ func destroy_old_snaps(datasets []string, snaps map[string]bool) {
 		if i != -1 {
 			date, err := time.Parse("@daily-2006-01-02", snapshot[i:])
 			if err == nil {
-				if time.Since(date) > time.Duration(RETENTION*24*time.Hour) {
+				if time.Since(date) > *retention {
 					todo = append(todo, snapshot)
 				}
 			}
@@ -108,6 +108,7 @@ func destroy_old_snaps(datasets []string, snaps map[string]bool) {
 
 func main() {
 	verbose = flag.Bool("v", false, "Verbose logging")
+	retention = flag.Duration("d", 14*24*time.Hour, "retention for daily snapshots")
 	flag.Parse()
 	datasets := flag.Args()
 	snaps := make(map[string]bool)
