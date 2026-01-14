@@ -69,7 +69,7 @@ func zfs_send(dataset string, chain Chain, target string, nomount bool) {
 		}
 
 		cmd = fmt.Sprintf(
-			"zfs send -c -v%s %s@%s|%szfs receive%s %s@%s",
+			"zfs send -c -v%s %s@%s|%szfs receive -F%s %s@%s",
 			incr, dataset, next.Snapshot, mbuf, canmount, dest, next.Snapshot,
 		)
 		log.Println(cmd)
